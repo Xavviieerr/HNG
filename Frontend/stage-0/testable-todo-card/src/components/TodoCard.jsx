@@ -6,7 +6,7 @@ function TodoCard() {
 	const [todo, setTodo] = useState({
 		title: "Finish SaaS landing page",
 		description: "Build hero section, pricing, and footer",
-		priority: "High",
+		priority: "Low",
 		dueDate: new Date("2026-02-18T12:00:00"),
 		status: "In Progress",
 		tags: ["work", "urgent", "design"],
@@ -30,18 +30,17 @@ function TodoCard() {
 			case "Low":
 				return "Low 🟢";
 			default:
-				return "gray";
+				return "Unknown";
 		}
 	}
 
 	function calculateTimeRemaining(dueDate) {
 		const now = new Date();
-
 		const due = new Date(dueDate);
+
 		if (isNaN(due.getTime())) {
 			return "Invalid date";
 		}
-		console.log(dueDate);
 
 		const diff = due - now;
 		const absDiff = Math.abs(diff);
@@ -50,37 +49,19 @@ function TodoCard() {
 		const hours = Math.floor(absDiff / (1000 * 60 * 60));
 		const days = Math.floor(absDiff / (1000 * 60 * 60 * 24));
 
-		// case now
 		if (absDiff < 60 * 1000) {
 			return "Due now!";
 		}
 
-		//futuer cases
 		if (diff > 0) {
-			if (days >= 2) {
-				return `Due in ${days} days`;
-			}
-
-			if (days === 1) {
-				return "Due tomorrow";
-			}
-
-			if (hours >= 1) {
-				return `Due in ${hours} hour${hours > 1 ? "s" : ""}`;
-			}
-
+			if (days >= 2) return `Due in ${days} days`;
+			if (days === 1) return "Due tomorrow";
+			if (hours >= 1) return `Due in ${hours} hour${hours > 1 ? "s" : ""}`;
 			return `Due in ${minutes} minute${minutes > 1 ? "s" : ""}`;
 		}
 
-		//overdue cases
-		if (days >= 1) {
-			return `Overdue by ${days} day${days > 1 ? "s" : ""}`;
-		}
-
-		if (hours >= 1) {
-			return `Overdue by ${hours} hour${hours > 1 ? "s" : ""}`;
-		}
-
+		if (days >= 1) return `Overdue by ${days} day${days > 1 ? "s" : ""}`;
+		if (hours >= 1) return `Overdue by ${hours} hour${hours > 1 ? "s" : ""}`;
 		return `Overdue by ${minutes} minute${minutes > 1 ? "s" : ""}`;
 	}
 
@@ -97,6 +78,8 @@ function TodoCard() {
 	}
 
 	useEffect(() => {
+		setTimeRemaining(calculateTimeRemaining(todo.dueDate));
+
 		const interval = setInterval(() => {
 			setTimeRemaining(calculateTimeRemaining(todo.dueDate));
 		}, 30000);
@@ -107,47 +90,80 @@ function TodoCard() {
 	return (
 		<article
 			data-testid="test-todo-card"
-			className="ring w-full max-w-[500px] mx-auto p-4 flex flex-col gap-3 box-border"
+			className="w-full max-w-[500px] mx-auto p-5 flex flex-col gap-4 bg-white rounded-2xl shadow-sm border border-gray-200"
 		>
-			{/* Title */}
-			<h3
-				data-testid="test-todo-title"
-				className={`text-lg font-semibold ${
-					todo.completed ? "line-through opacity-60" : ""
-				}`}
-			>
-				{todo.title}
-			</h3>
+			<div className="w-full overflow-hidden rounded-xl shadow-lg ring p-1">
+				<img
+					src="https://ntvb.tmsimg.com/assets/p31942675_v_h10_aa.jpg?w=1280&h=720"
+					alt="A little something"
+					className="w-full h-[300px] object-cover rounded-lg"
+				/>
+			</div>
+			{/* Header */}
+			<div className="flex flex-col gap-1">
+				<h3
+					data-testid="test-todo-title"
+					className={`text-lg font-semibold text-gray-900 ${
+						todo.completed ? "line-through opacity-60" : ""
+					}`}
+				>
+					{todo.title}
+				</h3>
 
-			{/* Description */}
-			<p
-				data-testid="test-todo-description"
-				className="text-sm text-gray-600 break-words"
-			>
-				{todo.description}
-			</p>
+				<p
+					data-testid="test-todo-description"
+					className="text-sm text-gray-600 break-words"
+				>
+					{todo.description}
+				</p>
+			</div>
 
-			{/* Priority */}
-			<span data-testid="test-todo-priority" className="text-sm font-medium">
-				{PriorityBadge(todo.priority)}
-			</span>
+			{/* Priority + Status */}
+			<div className="flex items-center justify-between flex-wrap gap-2">
+				<span
+					data-testid="test-todo-priority"
+					aria-label={`Priority: ${todo.priority}`}
+					className={`text-xs px-2 py-1 rounded-full font-medium ${
+						todo.priority === "High"
+							? "bg-red-100 text-red-600"
+							: todo.priority === "Medium"
+								? "bg-orange-100 text-orange-600"
+								: "bg-green-100 text-green-600"
+					}`}
+				>
+					{PriorityBadge(todo.priority)}
+				</span>
 
-			{/* Due date */}
-			<time data-testid="test-todo-due-date" className="text-sm text-gray-500">
-				Due: {formatDate(todo.dueDate)}
-			</time>
+				<span
+					data-testid="test-todo-status"
+					aria-label={`Status: ${todo.completed ? "Done" : todo.status}`}
+					className={`text-xs px-2 py-1 rounded-full font-medium ${
+						todo.completed
+							? "bg-gray-200 text-gray-700"
+							: "bg-blue-100 text-blue-600"
+					}`}
+				>
+					{todo.completed ? "Done" : todo.status}
+				</span>
+			</div>
 
-			{/* Time remaining */}
-			<time
-				data-testid="test-todo-time-remaining"
-				className="text-sm font-medium"
-			>
-				{timeRemaining}
-			</time>
+			{/* Dates */}
+			<div className="flex flex-col text-sm gap-1">
+				<time
+					data-testid="test-todo-due-date"
+					dateTime={todo.dueDate.toISOString()}
+					className="text-gray-500"
+				>
+					Due: {formatDate(todo.dueDate)}
+				</time>
 
-			{/* Status */}
-			<div data-testid="test-todo-status" className="text-sm">
-				Status: {todo.completed ? "Done" : todo.status}
+				<time
+					data-testid="test-todo-time-remaining"
+					aria-live="polite"
+					className="font-medium text-gray-800"
+				>
+					{timeRemaining}
+				</time>
 			</div>
 
 			{/* Checkbox */}
@@ -157,9 +173,9 @@ function TodoCard() {
 					checked={todo.completed}
 					onChange={handleToggle}
 					data-testid="test-todo-complete-toggle"
-					className="w-4 h-4"
+					className="w-4 h-4 accent-blue-500"
 				/>
-				Mark as complete
+				<span className="text-gray-700">Mark as complete</span>
 			</label>
 
 			{/* Tags */}
@@ -172,19 +188,19 @@ function TodoCard() {
 					<li
 						key={tag}
 						data-testid={`test-todo-tag-${tag}`}
-						className="px-2 py-1 text-xs border rounded-md bg-gray-100"
+						className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700 border border-gray-200"
 					>
-						{tag}
+						#{tag}
 					</li>
 				))}
 			</ul>
 
 			{/* Buttons */}
-			<div className="flex gap-2 flex-wrap">
+			<div className="flex gap-2 flex-wrap pt-2">
 				<button
 					data-testid="test-todo-edit-button"
 					onClick={editTodo}
-					className="px-3 py-1 text-sm bg-blue-500 text-white rounded-md"
+					className="flex-1 px-3 py-2 text-sm rounded-lg bg-blue-400 text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1"
 				>
 					Edit
 				</button>
@@ -192,7 +208,7 @@ function TodoCard() {
 				<button
 					data-testid="test-todo-delete-button"
 					onClick={deleteTodo}
-					className="px-3 py-1 text-sm bg-red-500 text-white rounded-md"
+					className="flex-1 px-3 py-2 text-sm rounded-lg bg-red-400 text-white hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1"
 				>
 					Delete
 				</button>
