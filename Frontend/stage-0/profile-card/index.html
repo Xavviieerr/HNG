@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile Card</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+    <main>
+        <article data-testid="test-profile-card" class="profile-card">
+
+            <figure class="avatar-container">
+                <img src="my_image.jpeg" data-testid="test-user-avatar" alt="Profile picture of John Doe"
+                    class="profile-image" />
+                <figcaption class="avatar-caption">John Doe</figcaption>
+            </figure>
+
+            <section class="profile-info">
+                <h2 data-testid="test-user-name">John Doe</h2>
+                <p data-testid="test-user-bio">Web Developer | Tech Enthusiast | Coffee Lover</p>
+
+                <div class="time-card">
+                    <h3>Current Epoch (ms)</h3>
+                    <p data-testid="test-user-time" aria-live="polite" id="epoch-display">Loading...</p>
+                    <button id="update-btn" aria-label="Update current time">Update Now</button>
+                </div>
+
+                <div class="social-links" data-testid="test-user-social-links">
+                    <a href="https://www.linkedin.com/in/chidera-paul-ogbu-42a35a251" target="_blank"
+                        rel="noopener noreferrer">LinkedIn</a>
+                    <a href="https://github.com/Xavviieerr" target="_blank" rel="noopener noreferrer">GitHub</a>
+                </div>
+
+                <section>
+                    <h3>Hobbies</h3>
+                    <ul class="hobbies-list" data-testid="test-user-hobbies">
+                        <li>Programming</li>
+                        <li>Traveling</li>
+                        <li>Cooking</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>Dislikes</h3>
+                    <ul class="dislikes-list" data-testid="test-user-dislikes">
+                        <li>Spam Emails</li>
+                        <li>Traffic Jams</li>
+                        <li>Bad Coffee</li>
+                    </ul>
+                </section>
+            </section>
+
+        </article>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

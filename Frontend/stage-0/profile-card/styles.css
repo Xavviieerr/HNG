@@ -1,0 +1,115 @@
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: Arial, sans-serif;
+	background: #f5f5f5;
+	color: #222;
+	line-height: 1.5;
+}
+
+.profile-card {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	max-width: 600px;
+	margin: 2rem auto;
+	padding: 1.5rem;
+	background: #ffffff;
+	border-radius: 12px;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Avatar */
+.avatar-container {
+	text-align: center;
+}
+
+.profile-image {
+	width: 120px;
+	height: 120px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.avatar-caption {
+	margin-top: 0.5rem;
+	font-weight: bold;
+}
+
+/* Info */
+.profile-info h2 {
+	font-size: 1.5rem;
+}
+
+.profile-info p {
+	margin-bottom: 1rem;
+	word-wrap: break-word;
+}
+
+/* Time card */
+.time-card {
+	margin: 1rem 0;
+}
+
+button {
+	padding: 0.5rem 1rem;
+	border: none;
+	background: #2e7d32;
+	color: white;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+button:hover {
+	background: #1b5e20;
+}
+
+/* Focus  */
+button:focus,
+a:focus {
+	outline: 3px solid #ff9800;
+	outline-offset: 2px;
+}
+
+/* Links */
+.social-links {
+	display: flex;
+	gap: 1rem;
+	margin-bottom: 1rem;
+}
+
+.social-links a {
+	text-decoration: none;
+	color: #1565c0;
+}
+
+.social-links a:hover {
+	text-decoration: underline;
+}
+
+/* Lists */
+ul {
+	margin-left: 1rem;
+	margin-bottom: 1rem;
+}
+
+/* Responsiveness */
+@media (min-width: 768px) {
+	.profile-card {
+		flex-direction: row;
+		align-items: flex-start;
+	}
+
+	.avatar-container {
+		flex: 1;
+		text-align: center;
+	}
+
+	.profile-info {
+		flex: 2;
+	}
+}
