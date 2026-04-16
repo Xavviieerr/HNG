@@ -23,10 +23,14 @@ export const createProfile = async (req, res, next) => {
 		//checks if profile already exists
 		const existingProfile = await Profile.findOne({ name: name.toLowerCase() });
 		if (existingProfile) {
-			return res.status(409).json({
+			const responseData = {
+				...existingProfile.toObject(),
+				id: existingProfile._id,
+			};
+			return res.status(200).json({
 				status: "success",
 				message: "Profile already exists",
-				data: existingProfile,
+				data: responseData,
 			});
 		}
 
@@ -48,7 +52,8 @@ export const createProfile = async (req, res, next) => {
 		//store in DB
 		const newProfile = await Profile.create(profilePayload);
 
-		res.status(201).json({ status: "success", data: newProfile });
+		const responseData = { ...newProfile.toObject(), id: newProfile._id };
+		res.status(201).json({ status: "success", data: responseData });
 	} catch (error) {
 		next(error);
 	}
@@ -119,7 +124,8 @@ export const getProfileById = async (req, res) => {
 			});
 		}
 
-		res.status(200).json({ status: "success", data: profile });
+		const responseData = { ...profile.toObject(), id: profile._id };
+		res.status(200).json({ status: "success", data: responseData });
 	} catch (error) {
 		next(error);
 	}
