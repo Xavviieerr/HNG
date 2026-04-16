@@ -23,6 +23,7 @@ app.use(limiter);
 app.use(cors());
 
 app.use(express.json());
+app.set("trust proxy", 1);
 
 //Routes
 app.get("/", (req, res) => {
