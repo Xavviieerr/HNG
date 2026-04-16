@@ -9,21 +9,11 @@ import { connectDB } from "./config/db.js";
 dotenv.config();
 
 const app = express();
-const limiter = rateLimit({
-	windowMs: 1 * 60 * 1000,
-	max: 10,
-	message: {
-		status: "error",
-		message: "Too many requests, please try again later.",
-	},
-});
 const PORT = process.env.PORT || 3000;
 connectDB();
-app.use(limiter);
 app.use(cors());
 
 app.use(express.json());
-app.set("trust proxy", 1);
 
 //Routes
 app.get("/", (req, res) => {
@@ -31,7 +21,7 @@ app.get("/", (req, res) => {
 		"Hello 🙂 Just a reminder: today is a new chance to smile, breathe, and enjoy the little things around you.",
 	);
 });
-app.use("/api/profiles", limiter, profileRoutes);
+app.use("/api/profiles", profileRoutes);
 
 // Global error handler
 app.use((error, req, res, next) => {
