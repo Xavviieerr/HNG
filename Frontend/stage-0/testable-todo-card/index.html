@@ -4,75 +4,95 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Todo Card</title>
+    <title>Advanced Todo Card</title>
     <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
 
     <main>
-        <article data-testid="test-todo-card" class="card">
+        <article class="card" data-testid="test-todo-card">
 
-            <!-- Image -->
-            <div class="image-wrapper">
-                <img src="https://ntvb.tmsimg.com/assets/p31942675_v_h10_aa.jpg" alt="Task preview" />
+            <!-- TITLE -->
+            <h3 id="title" data-testid="test-todo-title"></h3>
+
+            <!-- DESCRIPTION -->
+            <div id="collapsible" data-testid="test-todo-collapsible-section">
+                <p id="description" data-testid="test-todo-description"></p>
             </div>
 
-            <!-- Title -->
-            <h3 data-testid="test-todo-title" id="todo-title">
-                Finish SaaS landing page
-            </h3>
+            <button id="expandBtn" data-testid="test-todo-expand-toggle" aria-expanded="false"
+                aria-controls="collapsible" tabindex="3">Expand</button>
 
-            <!-- Description -->
-            <p data-testid="test-todo-description">
-                Build hero section, pricing, and footer
-            </p>
-
-            <!-- Priority and status -->
+            <!-- PRIORITY -->
             <div class="row">
-                <span data-testid="test-todo-priority" id="priority" aria-label="Priority: Low" class="badge low">
-                    Low 🟢
+                <span id="priority" data-testid="test-todo-priority">
+                    <span id="priorityIndicator" data-testid="test-todo-priority-indicator"></span>
+                    <span id="priorityText"></span>
                 </span>
 
-                <span data-testid="test-todo-status" id="status" aria-label="Status: In Progress" class="badge status">
-                    In Progress
-                </span>
+                <!-- STATUS CONTROL -->
+                <select id="statusControl" data-testid="test-todo-status-control" aria-label="Task status" tabindex="2">
+                    <option>Pending</option>
+                    <option>In Progress</option>
+                    <option>Done</option>
+                </select>
             </div>
 
-            <!-- Dates -->
-            <div class="dates">
-                <time data-testid="test-todo-due-date" id="dueDate" datetime="2026-02-18T12:00:00Z">
-                    Due Feb 18, 2026
-                </time>
+            <!-- STATUS DISPLAY -->
+            <span id="statusDisplay" data-testid="test-todo-status"></span>
 
-                <time data-testid="test-todo-time-remaining" id="timeRemaining" aria-live="polite">
-                    calculating...
-                </time>
-            </div>
+            <!-- DATES -->
+            <time id="dueDate" data-testid="test-todo-due-date"></time>
+            <time id="timeRemaining" data-testid="test-todo-time-remaining" aria-live="polite"></time>
 
-            <!-- Checkbox -->
-            <label class="checkbox">
-                <input type="checkbox" id="toggle" data-testid="test-todo-complete-toggle" />
-                <span>Mark as complete</span>
+            <span id="overdue" data-testid="test-todo-overdue-indicator" class="hidden">
+                Overdue
+            </span>
+
+            <!-- CHECKBOX -->
+            <label>
+                <input type="checkbox" id="checkbox" data-testid="test-todo-complete-toggle" tabindex="1" />
+                Mark as complete
             </label>
 
-            <!-- Tags -->
+            <!-- TAGS -->
             <ul role="list" data-testid="test-todo-tags" class="tags">
                 <li data-testid="test-todo-tag-work">#work</li>
                 <li data-testid="test-todo-tag-urgent">#urgent</li>
                 <li data-testid="test-todo-tag-design">#design</li>
             </ul>
 
-            <!-- Buttons -->
-            <div class="actions">
-                <button data-testid="test-todo-edit-button" id="editBtn">
-                    Edit
-                </button>
-
-                <button data-testid="test-todo-delete-button" id="deleteBtn">
-                    Delete
-                </button>
+            <!-- BUTTONS -->
+            <div id="editAndDeleteButtons" class="actions">
+                <button id="editBtn" data-testid="test-todo-edit-button" tabindex="4">Edit</button>
+                <button id="deleteBtn" data-testid="test-todo-delete-button" tabindex="5">Delete</button>
             </div>
+
+            <!-- EDIT FORM -->
+            <form id="editForm" data-testid="test-todo-edit-form" class="hidden">
+                <label for="editTitle">Title</label>
+                <input id="editTitle" type="text" data-testid="test-todo-edit-title-input" tabindex="6" />
+
+                <label for="editDesc">Description</label>
+                <textarea id="editDesc" data-testid="test-todo-edit-description-input" tabindex="7"></textarea>
+
+                <label for="editPriority">Priority</label>
+                <select id="editPriority" data-testid="test-todo-edit-priority-select" tabindex="8">
+                    <option>Low</option>
+                    <option>Medium</option>
+                    <option>High</option>
+                </select>
+
+                <label for="editDate">Due Date</label>
+                <input type="datetime-local" id="editDate" data-testid="test-todo-edit-due-date-input" tabindex="9" />
+
+                <div class="actions">
+                    <button type="button" id="saveBtn" data-testid="test-todo-save-button" tabindex="10">Save</button>
+                    <button type="button" id="cancelBtn" data-testid="test-todo-cancel-button"
+                        tabindex="11">Cancel</button>
+                </div>
+            </form>
 
         </article>
     </main>
