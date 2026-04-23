@@ -5,11 +5,13 @@ import {
 	getAllProfiles,
 	getProfileById,
 	deleteProfile,
+	searchProfiles,
 } from "../controllers/profileController.js";
-
-export default router;
 
 router.post("/", createProfile);
 router.get("/", getAllProfiles);
+router.get("/search", searchProfiles);
 router.get("/:id", getProfileById);
 router.delete("/:id", deleteProfile);
+
+export default router;

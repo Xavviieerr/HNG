@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
+import { v7 as uuidv7 } from "uuid";
 
 const profileSchema = new mongoose.Schema(
 	{
 		_id: {
 			type: String,
-			required: true,
+			default: () => uuidv7(),
 		},
 
 		name: {
@@ -12,21 +13,43 @@ const profileSchema = new mongoose.Schema(
 			required: true,
 			trim: true,
 			lowercase: true,
+			unique: true,
 		},
 
-		gender: String,
-		gender_probability: Number,
-		sample_size: Number,
+		gender: {
+			type: String,
+			enum: ["male", "female"],
+		},
 
-		age: Number,
-		age_group: String,
+		gender_probability: {
+			type: Number,
+		},
 
-		country_id: String,
-		country_probability: Number,
+		age: {
+			type: Number,
+		},
+
+		age_group: {
+			type: String,
+			enum: ["child", "teenager", "adult", "senior"],
+		},
+
+		country_id: {
+			type: String,
+			match: /^[A-Z]{2}$/,
+		},
+
+		country_name: {
+			type: String,
+		},
+
+		country_probability: {
+			type: Number,
+		},
 
 		created_at: {
-			type: String,
-			required: true,
+			type: Date,
+			default: Date.now,
 		},
 	},
 	{
