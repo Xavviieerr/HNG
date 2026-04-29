@@ -9,8 +9,10 @@ import {
 } from "../controllers/profileController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { roleMiddleware } from "../middleware/roleMiddleware.js";
+import { versionMiddleware } from "../middleware/versionMiddleware.js";
 
 router.use(authMiddleware);
+router.use(versionMiddleware);
 
 //read routes
 router.get("/", getAllProfiles);
