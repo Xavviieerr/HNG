@@ -57,20 +57,23 @@ export const handleGithubCallback = async (req, res) => {
 		});
 
 		const { id, login, email, avatar_url } = githubUser.data;
+		const githubId = String(id);
 
 		// create or update user
-		let user = await User.findOne({ github_id: id });
+		let user = await User.findOne({ github_id: githubId });
 
 		if (!user) {
 			user = await User.create({
-				github_id: id,
+				github_id: githubId,
 				username: login,
 				email,
 				avatar_url,
 			});
 		} else {
+			user.username = login;
+			user.email = email;
+			user.avatar_url = avatar_url;
 			user.last_login_at = new Date();
-			await user.save();
 		}
 
 		// issue JWT (access token)
@@ -80,6 +83,7 @@ export const handleGithubCallback = async (req, res) => {
 		// store refresh token in DB
 		user.refresh_token = appRefreshToken;
 		await user.save();
+
 		res.json({
 			status: "success",
 			access_token: appAccessToken,
@@ -90,7 +94,7 @@ export const handleGithubCallback = async (req, res) => {
 			},
 		});
 	} catch (err) {
-		console.log(err);
+		console.error("OAuth Callback Error:", err);
 		res.status(500).json({
 			status: "error",
 			message: "OAuth failed",
@@ -112,6 +116,7 @@ export const handleRefreshToken = async (req, res) => {
 		const user = await User.findOne({ refresh_token });
 
 		if (!user) {
+			console.log("Refresh token not found in DB:", refresh_token);
 			return res.status(403).json({
 				status: "error",
 				message: "Invalid or expired refresh token",
@@ -131,6 +136,7 @@ export const handleRefreshToken = async (req, res) => {
 			refresh_token: newRefreshToken,
 		});
 	} catch (err) {
+		console.error("Refresh Token Error:", err);
 		res.status(500).json({
 			status: "error",
 			message: "Server error",
