@@ -23,9 +23,13 @@ app.use(express.json());
 //session
 app.use(
 	session({
-		secret: process.env.JWT_SECRET,
+		secret: process.env.SESSION_SECRET,
 		resave: false,
-		saveUninitialized: true,
+		saveUninitialized: false,
+		cookie: {
+			secure: true,
+			httpOnly: true,
+		},
 	}),
 );
 app.use(logger);
