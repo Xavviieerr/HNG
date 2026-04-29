@@ -8,6 +8,8 @@ import profileRoutes from "./routes/profileRoute.js";
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/authRoute.js";
 import session from "express-session";
+import { logger } from "./middleware/logger.js";
+import { authLimiter, apiLimiter } from "./middleware/rateLimiter.js";
 
 dotenv.config();
 
@@ -26,6 +28,10 @@ app.use(
 		saveUninitialized: true,
 	}),
 );
+app.use(logger);
+
+app.use("/auth", authLimiter);
+app.use("/api", apiLimiter);
 
 //Routes
 app.get("/", (req, res) => {
