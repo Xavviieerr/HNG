@@ -2,6 +2,7 @@ import axios from "axios";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { generateCodeVerifier, generateCodeChallenge } from "../utils/pkce.js";
+import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
 
 const CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
@@ -46,12 +47,12 @@ export const handleGithubCallback = async (req, res) => {
 			{ headers: { Accept: "application/json" } },
 		);
 
-		const accessToken = tokenResponse.data.access_token;
+		const githubAccessToken = tokenResponse.data.access_token;
 
 		// fetch GitHub user
 		const githubUser = await axios.get("https://api.github.com/user", {
 			headers: {
-				Authorization: `Bearer ${accessToken}`,
+				Authorization: `Bearer ${githubAccessToken}`,
 			},
 		});
 
@@ -73,24 +74,23 @@ export const handleGithubCallback = async (req, res) => {
 		}
 
 		// issue JWT (access token)
-		const appToken = jwt.sign(
-			{
-				userId: user._id,
-				role: user.role,
-			},
-			JWT_SECRET,
-			{ expiresIn: "3m" },
-		);
+		const appAccessToken = generateAccessToken(user);
+		const appRefreshToken = generateRefreshToken(user);
 
+		// store refresh token in DB
+		user.refresh_token = appRefreshToken;
+		await user.save();
 		res.json({
 			status: "success",
-			access_token: appToken,
+			access_token: appAccessToken,
+			refresh_token: appRefreshToken,
 			user: {
 				username: user.username,
 				role: user.role,
 			},
 		});
 	} catch (err) {
+		console.log(err);
 		res.status(500).json({
 			status: "error",
 			message: "OAuth failed",
@@ -98,10 +98,110 @@ export const handleGithubCallback = async (req, res) => {
 	}
 };
 
-export const handleRefreshToken = (req, res) => {
-	res.json({ message: "refresh not implemented yet (next step)" });
-};
+export const handleRefreshToken = async (req, res) => {
+	try {
+		const { refresh_token } = req.body;
 
-export const handleLogout = (req, res) => {
-	res.json({ message: "logout not implemented yet" });
+		if (!refresh_token) {
+			return res.status(400).json({
+				status: "error",
+				message: "Refresh token required",
+			});
+		}
+
+		const user = await User.findOne({ refresh_token });
+
+		if (!user) {
+			return res.status(403).json({
+				status: "error",
+				message: "Invalid or expired refresh token",
+			});
+		}
+
+		// ROTATION
+		const newAccessToken = generateAccessToken(user);
+		const newRefreshToken = generateRefreshToken(user);
+
+		user.refresh_token = newRefreshToken;
+		await user.save();
+
+		res.json({
+			status: "success",
+			access_token: newAccessToken,
+			refresh_token: newRefreshToken,
+		});
+	} catch (err) {
+		res.status(500).json({
+			status: "error",
+			message: "Server error",
+		});
+	}
+};
+// export const handleRefreshToken = async (req, res) => {
+// 	try {
+// 		const { refresh_token } = req.body;
+
+// 		if (!refresh_token) {
+// 			return res.status(400).json({
+// 				status: "error",
+// 				message: "Refresh token required",
+// 			});
+// 		}
+
+// 		const decoded = jwt.verify(refresh_token, process.env.JWT_SECRET);
+
+// 		const user = await User.findById(decoded.userId);
+
+// 		if (!user || user.refresh_token !== refresh_token) {
+// 			return res.status(403).json({
+// 				status: "error",
+// 				message: "Invalid refresh token",
+// 			});
+// 		}
+
+// 		// ROTATION: invalidate old token
+// 		user.refresh_token = null;
+// 		await user.save();
+
+// 		// issue new tokens
+// 		const newAccessToken = generateAccessToken(user);
+// 		const newRefreshToken = generateRefreshToken(user);
+
+// 		user.refresh_token = newRefreshToken;
+// 		await user.save();
+
+// 		res.json({
+// 			status: "success",
+// 			access_token: newAccessToken,
+// 			refresh_token: newRefreshToken,
+// 		});
+// 	} catch (err) {
+// 		res.status(403).json({
+// 			status: "error",
+// 			message: "Invalid or expired refresh token",
+// 		});
+// 	}
+// };
+
+export const handleLogout = async (req, res) => {
+	const { refresh_token } = req.body;
+
+	if (!refresh_token) {
+		return res.status(400).json({
+			status: "error",
+			message: "Refresh token required",
+		});
+	}
+
+	const user = await User.findOne({ refresh_token });
+
+	if (user) {
+		user.refresh_token = null;
+		await user.save();
+	}
+
+	res.json({
+		status: "success",
+		message: "Logged out successfully",
+	});
 };
