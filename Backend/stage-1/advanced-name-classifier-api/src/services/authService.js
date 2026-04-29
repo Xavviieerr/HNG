@@ -3,10 +3,11 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { generateCodeVerifier, generateCodeChallenge } from "../utils/pkce.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
+import { setAuthSession } from "../utils/authSessionStore.js";
 
 const CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
-const BASE_URL = (process.env.BASE_URL || "").trim();
+const BASE_URL = process.env.BASE_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export const handleGithubLogin = (req, res) => {
@@ -84,6 +85,15 @@ export const handleGithubCallback = async (req, res) => {
 		user.refresh_token = appRefreshToken;
 		await user.save();
 
+		setAuthSession(state, {
+			access_token: appAccessToken,
+			refresh_token: appRefreshToken,
+			user: {
+				username: user.username,
+				role: user.role,
+			},
+		});
+
 		res.json({
 			status: "success",
 			access_token: appAccessToken,
@@ -143,51 +153,6 @@ export const handleRefreshToken = async (req, res) => {
 		});
 	}
 };
-// export const handleRefreshToken = async (req, res) => {
-// 	try {
-// 		const { refresh_token } = req.body;
-
-// 		if (!refresh_token) {
-// 			return res.status(400).json({
-// 				status: "error",
-// 				message: "Refresh token required",
-// 			});
-// 		}
-
-// 		const decoded = jwt.verify(refresh_token, process.env.JWT_SECRET);
-
-// 		const user = await User.findById(decoded.userId);
-
-// 		if (!user || user.refresh_token !== refresh_token) {
-// 			return res.status(403).json({
-// 				status: "error",
-// 				message: "Invalid refresh token",
-// 			});
-// 		}
-
-// 		// ROTATION: invalidate old token
-// 		user.refresh_token = null;
-// 		await user.save();
-
-// 		// issue new tokens
-// 		const newAccessToken = generateAccessToken(user);
-// 		const newRefreshToken = generateRefreshToken(user);
-
-// 		user.refresh_token = newRefreshToken;
-// 		await user.save();
-
-// 		res.json({
-// 			status: "success",
-// 			access_token: newAccessToken,
-// 			refresh_token: newRefreshToken,
-// 		});
-// 	} catch (err) {
-// 		res.status(403).json({
-// 			status: "error",
-// 			message: "Invalid or expired refresh token",
-// 		});
-// 	}
-// };
 
 export const handleLogout = async (req, res) => {
 	const { refresh_token } = req.body;
@@ -209,5 +174,30 @@ export const handleLogout = async (req, res) => {
 	res.json({
 		status: "success",
 		message: "Logged out successfully",
+	});
+};
+
+export const handleGetStatus = async (req, res) => {
+	const { state } = req.query;
+
+	if (!state) {
+		return res.status(400).json({
+			status: "error",
+			message: "state required",
+		});
+	}
+
+	const session = getAuthSession(state);
+
+	if (!session) {
+		return res.status(404).json({
+			status: "pending",
+			message: "Authentication not completed yet",
+		});
+	}
+
+	return res.json({
+		status: "success",
+		...session,
 	});
 };
