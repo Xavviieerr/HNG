@@ -17,13 +17,14 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 console.log("PORT:", process.env.PORT);
 connectDB();
+app.set("trust proxy", 1);
 app.use(cors());
 
 app.use(express.json());
 //session
 app.use(
 	session({
-		secret: process.env.SESSION_SECRET,
+		secret: process.env.SESSION_SECRET || process.env.JWT_SECRET,
 		resave: false,
 		saveUninitialized: false,
 		cookie: {
