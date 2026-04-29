@@ -7,11 +7,18 @@ import {
 	deleteProfile,
 	searchProfiles,
 } from "../controllers/profileController.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
+import { roleMiddleware } from "../middleware/roleMiddleware.js";
 
-router.post("/", createProfile);
+router.use(authMiddleware);
+
+//read routes
 router.get("/", getAllProfiles);
 router.get("/search", searchProfiles);
 router.get("/:id", getProfileById);
-router.delete("/:id", deleteProfile);
+
+//admin
+router.post("/", roleMiddleware(["admin"]), createProfile);
+router.delete("/:id", roleMiddleware(["admin"]), deleteProfile);
 
 export default router;
