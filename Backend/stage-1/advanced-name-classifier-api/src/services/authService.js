@@ -26,31 +26,27 @@ export const handleGithubCallback = async (req, res) => {
 	try {
 		const { code, state } = req.query;
 
-		if (!req.session.state || req.session.state !== state) {
+		if (!code || !state) {
 			return res.status(400).json({
 				status: "error",
-				message: "Invalid state",
+				message: "Missing OAuth parameters",
 			});
 		}
 
-		const codeVerifier = req.session.codeVerifier;
-
-		// exchange code for access token
+		// exchange code for GitHub token
 		const tokenResponse = await axios.post(
-			`https://github.com/login/oauth/access_token`,
+			"https://github.com/login/oauth/access_token",
 			{
 				client_id: CLIENT_ID,
 				client_secret: CLIENT_SECRET,
 				code,
 				redirect_uri: `${BASE_URL}/auth/github/callback`,
-				state,
 			},
 			{ headers: { Accept: "application/json" } },
 		);
 
 		const githubAccessToken = tokenResponse.data.access_token;
 
-		// fetch GitHub user
 		const githubUser = await axios.get("https://api.github.com/user", {
 			headers: {
 				Authorization: `Bearer ${githubAccessToken}`,
@@ -58,59 +54,134 @@ export const handleGithubCallback = async (req, res) => {
 		});
 
 		const { id, login, email, avatar_url } = githubUser.data;
-		const githubId = String(id);
 
-		// create or update user
-		let user = await User.findOne({ github_id: githubId });
+		let user = await User.findOne({ github_id: String(id) });
 
 		if (!user) {
 			user = await User.create({
-				github_id: githubId,
+				github_id: String(id),
 				username: login,
 				email,
 				avatar_url,
 			});
 		} else {
-			user.username = login;
-			user.email = email;
-			user.avatar_url = avatar_url;
 			user.last_login_at = new Date();
 		}
 
-		// issue JWT (access token)
-		const appAccessToken = generateAccessToken(user);
-		const appRefreshToken = generateRefreshToken(user);
+		const accessToken = generateAccessToken(user);
+		const refreshToken = generateRefreshToken(user);
 
-		// store refresh token in DB
-		user.refresh_token = appRefreshToken;
+		user.refresh_token = refreshToken;
 		await user.save();
 
-		setAuthSession(state, {
-			access_token: appAccessToken,
-			refresh_token: appRefreshToken,
-			user: {
-				username: user.username,
-				role: user.role,
-			},
-		});
-
-		res.json({
-			status: "success",
-			access_token: appAccessToken,
-			refresh_token: appRefreshToken,
-			user: {
-				username: user.username,
-				role: user.role,
-			},
-		});
+		// returns HTML page instead of JSON for CLI + browser compatibility
+		return res.send(`
+			<html>
+				<body>
+					<script>
+						window.location.href = "http://localhost:4000/success?access_token=${accessToken}&refresh_token=${refreshToken}";
+					</script>
+					Login successful. Redirecting...
+				</body>
+			</html>
+		`);
 	} catch (err) {
-		console.error("OAuth Callback Error:", err);
+		console.error(err);
 		res.status(500).json({
 			status: "error",
 			message: "OAuth failed",
 		});
 	}
 };
+// export const handleGithubCallback = async (req, res) => {
+// 	try {
+// 		const { code, state } = req.query;
+
+// 		if (!req.session.state || req.session.state !== state) {
+// 			return res.status(400).json({
+// 				status: "error",
+// 				message: "Invalid state",
+// 			});
+// 		}
+
+// 		const codeVerifier = req.session.codeVerifier;
+
+// 		// exchange code for access token
+// 		const tokenResponse = await axios.post(
+// 			`https://github.com/login/oauth/access_token`,
+// 			{
+// 				client_id: CLIENT_ID,
+// 				client_secret: CLIENT_SECRET,
+// 				code,
+// 				redirect_uri: `${BASE_URL}/auth/github/callback`,
+// 				state,
+// 			},
+// 			{ headers: { Accept: "application/json" } },
+// 		);
+
+// 		const githubAccessToken = tokenResponse.data.access_token;
+
+// 		// fetch GitHub user
+// 		const githubUser = await axios.get("https://api.github.com/user", {
+// 			headers: {
+// 				Authorization: `Bearer ${githubAccessToken}`,
+// 			},
+// 		});
+
+// 		const { id, login, email, avatar_url } = githubUser.data;
+// 		const githubId = String(id);
+
+// 		// create or update user
+// 		let user = await User.findOne({ github_id: githubId });
+
+// 		if (!user) {
+// 			user = await User.create({
+// 				github_id: githubId,
+// 				username: login,
+// 				email,
+// 				avatar_url,
+// 			});
+// 		} else {
+// 			user.username = login;
+// 			user.email = email;
+// 			user.avatar_url = avatar_url;
+// 			user.last_login_at = new Date();
+// 		}
+
+// 		// issue JWT (access token)
+// 		const appAccessToken = generateAccessToken(user);
+// 		const appRefreshToken = generateRefreshToken(user);
+
+// 		// store refresh token in DB
+// 		user.refresh_token = appRefreshToken;
+// 		await user.save();
+
+// 		setAuthSession(state, {
+// 			access_token: appAccessToken,
+// 			refresh_token: appRefreshToken,
+// 			user: {
+// 				username: user.username,
+// 				role: user.role,
+// 			},
+// 		});
+
+// 		res.json({
+// 			status: "success",
+// 			access_token: appAccessToken,
+// 			refresh_token: appRefreshToken,
+// 			user: {
+// 				username: user.username,
+// 				role: user.role,
+// 			},
+// 		});
+// 	} catch (err) {
+// 		console.error("OAuth Callback Error:", err);
+// 		res.status(500).json({
+// 			status: "error",
+// 			message: "OAuth failed",
+// 		});
+// 	}
+// };
 
 export const handleRefreshToken = async (req, res) => {
 	try {
