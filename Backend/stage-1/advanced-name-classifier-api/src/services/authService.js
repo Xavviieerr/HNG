@@ -6,7 +6,7 @@ import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
 
 const CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
-const BASE_URL = process.env.BASE_URL;
+const BASE_URL = (process.env.BASE_URL || "").trim();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export const handleGithubLogin = (req, res) => {
