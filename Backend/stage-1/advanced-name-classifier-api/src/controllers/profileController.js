@@ -108,12 +108,31 @@ export const getAllProfiles = async (req, res, next) => {
 				.limit(Number(limit)),
 			Profile.countDocuments(filter),
 		]);
-
+		const totalPages = Math.ceil(total / limit);
+		// res.status(200).json({
+		// 	status: "success",
+		// 	page: Number(page),
+		// 	limit: Number(limit),
+		// 	total,
+		// 	data: profiles.map(formatProfile),
+		// });
 		res.status(200).json({
 			status: "success",
 			page: Number(page),
 			limit: Number(limit),
 			total,
+			total_pages: totalPages,
+			links: {
+				self: `/api/profiles?page=${page}&limit=${limit}`,
+				next:
+					page < totalPages
+						? `/api/profiles?page=${Number(page) + 1}&limit=${limit}`
+						: null,
+				prev:
+					page > 1
+						? `/api/profiles?page=${Number(page) - 1}&limit=${limit}`
+						: null,
+			},
 			data: profiles.map(formatProfile),
 		});
 	} catch (error) {
@@ -209,7 +228,7 @@ export const getProfileById = async (req, res) => {
 		const responseData = { ...profile.toObject(), id: profile._id };
 		res.status(200).json({
 			status: "success",
-			data: responseData.map(formatProfile),
+			data: formatProfile(profile),
 		});
 	} catch (error) {
 		next(error);
@@ -240,5 +259,44 @@ export const deleteProfile = async (req, res) => {
 		});
 	} catch (error) {
 		next(error);
+	}
+};
+
+export const exportProfiles = async (req, res, next) => {
+	try {
+		const filter = {};
+
+		const profiles = await Profile.find(filter);
+
+		const header =
+			"id,name,gender,gender_probability,age,age_group,country_id,country_name,country_probability,created_at";
+
+		const rows = profiles.map((p) => {
+			const f = formatProfile(p);
+			return [
+				f.id,
+				f.name,
+				f.gender,
+				f.gender_probability,
+				f.age,
+				f.age_group,
+				f.country_id,
+				f.country_name,
+				f.country_probability,
+				f.created_at,
+			].join(",");
+		});
+
+		const csv = [header, ...rows].join("\n");
+
+		res.setHeader("Content-Type", "text/csv");
+		res.setHeader(
+			"Content-Disposition",
+			`attachment; filename="profiles_${Date.now()}.csv"`,
+		);
+
+		res.status(200).send(csv);
+	} catch (err) {
+		next(err);
 	}
 };

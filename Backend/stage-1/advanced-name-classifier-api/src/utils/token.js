@@ -17,6 +17,6 @@ export const generateRefreshToken = (user) => {
 			userId: user._id,
 		},
 		process.env.JWT_SECRET,
-		{ expiresIn: "5m" },
+		{ expiresIn: "7d" },
 	);
 };
