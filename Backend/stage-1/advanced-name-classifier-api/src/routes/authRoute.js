@@ -13,10 +13,10 @@ import { router } from "./profileRoute.js";
 router.use(authMiddleware);
 
 router.get("/github", githubLogin);
-router.get("/me", getMe);
 router.get("/github/callback", githubCallback);
 
 router.post("/refresh", refreshToken);
 router.post("/logout", logout);
+router.get("/me", getMe);
 
 export default router;
