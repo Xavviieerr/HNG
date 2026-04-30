@@ -319,7 +319,8 @@ export const handleLogout = async (req, res) => {
  */
 export const handleGetMe = async (req, res) => {
 	try {
-		const user = await User.findById(req.user.id).select("-refresh_token -__v");
+		const user = await User.findById(req.user.userId).select("-refresh_token -__v");
+		console.log("User id:", req.user.userId);
 
 		if (!user) {
 			return res.status(404).json({

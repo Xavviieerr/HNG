@@ -1,5 +1,5 @@
 import express from "express";
-const router = express.Router();
+export const router = express.Router();
 import {
 	createProfile,
 	getAllProfiles,
