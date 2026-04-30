@@ -10,8 +10,6 @@ import {
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { router } from "./profileRoute.js";
 
-const router = express.Router();
-
 router.use(authMiddleware);
 
 router.get("/github", githubLogin);
