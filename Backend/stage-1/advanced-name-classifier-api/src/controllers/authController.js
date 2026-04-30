@@ -3,7 +3,7 @@ import {
 	handleGithubCallback,
 	handleRefreshToken,
 	handleLogout,
-	handleGetStatus,
+	handleGetMe,
 } from "../services/authService.js";
 
 export const githubLogin = (req, res) => handleGithubLogin(req, res);
@@ -15,4 +15,4 @@ export const refreshToken = (req, res) => handleRefreshToken(req, res);
 
 export const logout = (req, res) => handleLogout(req, res);
 
-export const getSataus = (req, res) => handleGetStatus(req, res);
+export const getMe = (req, res) => handleGetMe(req, res);

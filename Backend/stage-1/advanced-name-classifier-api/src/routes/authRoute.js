@@ -4,12 +4,12 @@ import {
 	githubCallback,
 	refreshToken,
 	logout,
-	getSataus,
+	getMe,
 } from "../controllers/authController.js";
 
 const router = express.Router();
 router.get("/github", githubLogin);
-router.get("/status", getSataus);
+router.get("/me", getMe);
 router.get("/github/callback", githubCallback);
 
 router.post("/refresh", refreshToken);
